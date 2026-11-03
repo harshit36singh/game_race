@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#ff9a5a" />
+    <title>Loop Rider</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hidden">
+      <div class="hud-left">
+        <div id="hud-time">0.00</div>
+        <div id="hud-level"></div>
+        <div class="progress"><div id="hud-progress"></div></div>
+      </div>
+      <div class="hud-right">
+        <button id="btn-mute" class="round" aria-label="Toggle sound">🔊</button>
+        <button id="btn-pause" class="round" aria-label="Pause">❚❚</button>
+      </div>
+    </div>
+
+    <div id="popups"></div>
+
+    <div id="touch" class="hidden">
+      <div class="pad left">
+        <button data-ctl="brake" aria-label="Brake">BRAKE</button>
+        <button data-ctl="leanBack" aria-label="Lean back">⟲</button>
+      </div>
+      <div class="pad right">
+        <button data-ctl="leanFwd" aria-label="Lean forward">⟳</button>
+        <button data-ctl="gas" class="gas" aria-label="Gas">GAS</button>
+      </div>
+    </div>
+
+    <div id="menu" class="screen">
+      <h1>LOOP<span>RIDER</span></h1>
+      <p class="tag">Flip it. Loop it. Beat your ghost.</p>
+      <button id="btn-play" class="big">PLAY</button>
+      <div class="keys">
+        <div><kbd>↑</kbd>/<kbd>W</kbd> Gas</div>
+        <div><kbd>↓</kbd>/<kbd>S</kbd> Brake / reverse</div>
+        <div><kbd>←</kbd><kbd>→</kbd>/<kbd>A</kbd><kbd>D</kbd> Lean</div>
+        <div><kbd>R</kbd> Restart · <kbd>Esc</kbd> Pause</div>
+      </div>
+      <p class="small">Every flip takes 1 second off your time.</p>
+    </div>
+
+    <div id="levels" class="screen hidden">
+      <h2>Choose a track</h2>
+      <div id="stars-total"></div>
+      <div id="level-grid"></div>
+      <button id="btn-levels-back" class="ghost-btn">Back</button>
+    </div>
+
+    <div id="pause" class="screen dim hidden">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="big">RESUME</button>
+      <button id="btn-restart">Restart</button>
+      <button id="btn-quit" class="ghost-btn">Tracks</button>
+    </div>
+
+    <div id="result" class="screen dim hidden">
+      <h2 id="result-title">Finished!</h2>
+      <div id="result-stars"></div>
+      <div id="result-time"></div>
+      <div id="result-detail"></div>
+      <div class="row">
+        <button id="btn-retry">Retry</button>
+        <button id="btn-next" class="big">NEXT</button>
+      </div>
+      <button id="btn-result-levels" class="ghost-btn">Tracks</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "loop-rider",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "planck": "^1.4.2"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  },
+  "private": true
+}
