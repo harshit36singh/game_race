@@ -201,8 +201,10 @@ export class TrackBuilder {
     return this;
   }
 
+  /** Respawn point; always followed by flat ground so the bike spawns cleanly. */
   checkpoint() {
     this.data.checkpoints.push({ x: this.x, y: this.y });
+    this.flat(6);
     return this;
   }
 

@@ -54,7 +54,7 @@ export const LEVELS: Level[] = [
       tb()
         .flat(8).kicker(6, 2).gap(10, -6).landing(14, 4).flat(6)
         .checkpoint()
-        .slope(10, 3).flat(3).kicker(4, 1.5).gap(8, 1).flat(6).slope(14, -6).loop(4.2).flat(6)
+        .flat(4).kicker(5, 1.5).gap(7, -0.5).landing(8, 1.5).flat(6).slope(14, -6).flat(3).loop(4.2).flat(6)
         .checkpoint()
         .hill(8, -2).hill(8, -2).flat(4).steps(3, 4, -1.2).flat(6)
         .kicker(5, 1.8).gap(8, -4).landing(12, 3).flat(10)
@@ -65,10 +65,10 @@ export const LEVELS: Level[] = [
     theme: 'neon',
     build: () =>
       tb()
-        .flat(8).slope(16, -6).flat(4).loop(4).flat(4).slope(12, -3).loop(3.6).flat(6)
+        .flat(8).slope(16, -6).flat(4).loop(4).flat(12).loop(3.8).flat(6)
         .checkpoint()
-        .bumps(3, 5, 1).flat(4).kicker(5, 2).gap(9, -1).landing(10, 3).flat(4)
-        .slope(14, -5).loop(4.5).flat(8)
+        .bumps(3, 6, 0.7).flat(8).kicker(5, 1.6).gap(7, -1).landing(12, 3).flat(4)
+        .flat(4).slope(18, -7).flat(3).loop(4.2).flat(8)
         .checkpoint()
         .hill(12, 2.5).flat(10)
         .finish(),
@@ -80,9 +80,9 @@ export const LEVELS: Level[] = [
       tb()
         .flat(8).steps(5, 4, 0.9).flat(3).kicker(5, 1.5).gap(9, -4).landing(12, 3).flat(6)
         .checkpoint()
-        .bumps(6, 3.5, 0.8).flat(4).slope(14, -6).loop(4).loop(4.2).flat(6)
+        .bumps(4, 4, 0.6).flat(6).slope(16, -6).flat(3).loop(4).flat(10).loop(4.2).flat(6)
         .checkpoint()
-        .slope(10, 3).kicker(4, 1.5).gap(7, 2).flat(4).kicker(4, 1.5).gap(8, -2).landing(10, 3).flat(10)
+        .flat(4).kicker(5, 1.5).gap(8, -1).landing(10, 2).flat(3).kicker(5, 1.5).gap(8, -2).landing(10, 3).flat(10)
         .finish(),
   },
   {
@@ -90,7 +90,7 @@ export const LEVELS: Level[] = [
     theme: 'forest',
     build: () =>
       tb()
-        .flat(10).hill(14, 3).hill(14, 4).flat(6).slope(20, -8).loop(4.5).flat(6)
+        .flat(10).hill(16, 2.5).hill(18, 3).flat(6).slope(20, -8).loop(4.5).flat(6)
         .checkpoint()
         .bumps(4, 6, 1.4).flat(4).kicker(6, 2.2).gap(10, -2).landing(12, 3).flat(6)
         .checkpoint()
@@ -113,5 +113,5 @@ export const LEVELS: Level[] = [
 
 /** Par times scale with track length. Returns [3-star, 2-star] thresholds in seconds. */
 export function starTimes(length: number): [number, number] {
-  return [Math.round((length / 12) * 10) / 10, Math.round((length / 8.5) * 10) / 10];
+  return [Math.round((length / 16) * 10) / 10, Math.round((length / 12) * 10) / 10];
 }

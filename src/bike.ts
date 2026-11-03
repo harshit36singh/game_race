@@ -17,9 +17,9 @@ const TORSO = [
 ];
 
 const MAX_SPEED = 58; // wheel rad/s
-const DRIVE_TORQUE = 20;
+const DRIVE_TORQUE = 14;
 const BRAKE_TORQUE = 14;
-const LEAN_TORQUE = 22;
+const LEAN_TORQUE = 30;
 const MAX_SPIN = 7.5;
 
 export interface Controls {
@@ -44,7 +44,7 @@ export class Bike {
   constructor(private world: World, x: number, y: number, public color: string, public suit: string) {
     const pos = (l: { x: number; y: number }) => new Vec2(x + l.x, y + l.y);
 
-    this.chassis = world.createBody({ type: 'dynamic', position: new Vec2(x, y) });
+    this.chassis = world.createBody({ type: 'dynamic', position: new Vec2(x, y), linearDamping: 0.12 });
     const chassisPts = [
       { x: -0.75, y: -0.15 },
       { x: 0.55, y: -0.15 },
@@ -60,7 +60,7 @@ export class Bike {
     this.addRiderFixtures(this.chassis);
 
     const wheel = (l: { x: number; y: number }) => {
-      const b = world.createBody({ type: 'dynamic', position: pos(l) });
+      const b = world.createBody({ type: 'dynamic', position: pos(l), linearDamping: 0.12 });
       b.createFixture(new CircleShape(WHEEL_R), {
         density: 1.3,
         friction: 1.35,

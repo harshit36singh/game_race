@@ -132,9 +132,11 @@ export class Game {
 
   private updateLoopPhases() {
     const p = this.bike.chassis.getPosition();
+    const v = this.bike.chassis.getLinearVelocity();
     for (const l of this.track.loops) {
       const d = Math.hypot(p.x - l.cx, p.y - l.cy);
-      if (d < l.r * 1.5 && p.y > l.cy && p.x < l.cx) this.loopPhase[l.id] = 1;
+      // Past the top: inside the ring's upper half and travelling leftwards.
+      if (d < l.r * 1.2 && d > l.r * 0.4 && p.x < l.cx && p.y > l.cy + l.r * 0.3 && v.x < -0.5) this.loopPhase[l.id] = 1;
       else if (d > l.r * 1.9) this.loopPhase[l.id] = 0;
     }
   }
