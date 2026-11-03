@@ -7,13 +7,15 @@ export class Input implements Controls {
   leanFwd = false;
   private keys = new Set<string>();
   private touch = { gas: false, brake: false, leanBack: false, leanFwd: false };
-  onAction: (a: 'pause' | 'restart') => void = () => {};
+  onAction: (a: 'pause' | 'restart' | 'nitro' | 'jump') => void = () => {};
 
   constructor() {
     addEventListener('keydown', (e) => {
       if (e.repeat) return;
       if (e.code === 'Escape' || e.code === 'KeyP') this.onAction('pause');
       else if (e.code === 'KeyR') this.onAction('restart');
+      else if (e.code === 'KeyE' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.onAction('nitro');
+      else if (e.code === 'KeyQ') this.onAction('jump');
       this.keys.add(e.code);
       if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault();
       this.sync();

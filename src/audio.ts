@@ -93,4 +93,21 @@ export class Sfx {
   finish() {
     [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.tone(f, 0.25, 'triangle'), i * 110));
   }
+
+  nitro() {
+    this.tone(180, 0.5, 'sawtooth', 0.2, 500);
+  }
+
+  jump() {
+    this.tone(220, 0.3, 'square', 0.2, 700);
+  }
+
+  shield() {
+    this.tone(880, 0.3, 'triangle', 0.25, -400);
+  }
+
+  coin() {
+    this.tone(1320, 0.08, 'square', 0.08);
+    setTimeout(() => this.tone(1760, 0.1, 'square', 0.08), 50);
+  }
 }

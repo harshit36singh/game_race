@@ -1,4 +1,5 @@
 import { World, Vec2, Body, CircleShape, PolygonShape, WheelJoint, Fixture } from 'planck';
+import type { BikeSpec } from './catalog';
 
 export interface BikePartData {
   kind: 'wheel' | 'chassis' | 'head' | 'torso';
@@ -16,11 +17,11 @@ const TORSO = [
   { x: -0.12, y: 1.05 },
 ];
 
-const MAX_SPEED = 58; // wheel rad/s
-const DRIVE_TORQUE = 14;
 const BRAKE_TORQUE = 14;
-const LEAN_TORQUE = 30;
 const MAX_SPIN = 7.5;
+const NITRO_FORCE = 75;
+const NITRO_SPEED_MULT = 1.35;
+const JUMP_SPEED = 11;
 
 export interface Controls {
   gas: boolean;
@@ -40,8 +41,9 @@ export class Bike {
   rider: Body | null = null; // set once the rider detaches
   private riderFixtures: Fixture[] = [];
   crashed = false;
+  nitro = 0; // seconds of boost remaining
 
-  constructor(private world: World, x: number, y: number, public color: string, public suit: string) {
+  constructor(private world: World, x: number, y: number, public spec: BikeSpec) {
     const pos = (l: { x: number; y: number }) => new Vec2(x + l.x, y + l.y);
 
     this.chassis = world.createBody({ type: 'dynamic', position: new Vec2(x, y), linearDamping: 0.12 });
@@ -63,7 +65,7 @@ export class Bike {
       const b = world.createBody({ type: 'dynamic', position: pos(l), linearDamping: 0.12 });
       b.createFixture(new CircleShape(WHEEL_R), {
         density: 1.3,
-        friction: 1.35,
+        friction: spec.grip,
         restitution: 0.05,
         filterGroupIndex: GROUP,
         userData: { kind: 'wheel', lc: { x: 0, y: 0 } } as BikePartData,
@@ -74,7 +76,7 @@ export class Bike {
     this.rear = wheel(REAR);
     this.front = wheel(FRONT);
 
-    const susp = { frequencyHz: 4.5, dampingRatio: 0.7, enableMotor: false, maxMotorTorque: DRIVE_TORQUE };
+    const susp = { frequencyHz: spec.susp, dampingRatio: 0.7, enableMotor: false, maxMotorTorque: spec.torque };
     this.rearJ = world.createJoint(
       new WheelJoint(susp, this.chassis, this.rear, this.rear.getPosition(), new Vec2(0, 1)),
     )!;
@@ -112,16 +114,28 @@ export class Bike {
     return this.chassis.getLinearVelocity().length();
   }
 
-  control(c: Controls) {
+  private bodies() {
+    return [this.chassis, this.rear, this.front];
+  }
+
+  control(c: Controls, dt: number) {
+    const s = this.spec;
     if (this.crashed) {
       this.rearJ.enableMotor(false);
       this.frontJ.enableMotor(false);
+      this.nitro = 0;
       return;
     }
-    if (c.gas) {
+    const boosting = this.nitro > 0;
+    if (boosting) {
+      this.nitro = Math.max(0, this.nitro - dt);
+      const a = this.chassis.getAngle();
+      this.chassis.applyForceToCenter(new Vec2(Math.cos(a) * NITRO_FORCE, Math.sin(a) * NITRO_FORCE), true);
+    }
+    if (c.gas || boosting) {
       this.rearJ.enableMotor(true);
-      this.rearJ.setMotorSpeed(-MAX_SPEED);
-      this.rearJ.setMaxMotorTorque(DRIVE_TORQUE);
+      this.rearJ.setMotorSpeed(-s.maxSpeed * (boosting ? NITRO_SPEED_MULT : 1));
+      this.rearJ.setMaxMotorTorque(s.torque * (boosting ? 1.3 : 1));
       this.frontJ.enableMotor(false);
     } else if (c.brake) {
       if (this.forwardSpeed() > 0.6) {
@@ -136,7 +150,7 @@ export class Bike {
         this.frontJ.enableMotor(false);
         this.rearJ.enableMotor(true);
         this.rearJ.setMotorSpeed(14);
-        this.rearJ.setMaxMotorTorque(DRIVE_TORQUE * 0.5);
+        this.rearJ.setMaxMotorTorque(s.torque * 0.5);
       }
     } else {
       this.rearJ.enableMotor(false);
@@ -146,15 +160,48 @@ export class Bike {
     let lean = 0;
     if (c.leanBack) lean += 1;
     if (c.leanFwd) lean -= 1;
-    if (lean !== 0) this.chassis.applyTorque(lean * LEAN_TORQUE, true);
+    if (lean !== 0) this.chassis.applyTorque(lean * s.lean, true);
     const w = this.chassis.getAngularVelocity();
     if (Math.abs(w) > MAX_SPIN) this.chassis.setAngularVelocity(Math.sign(w) * MAX_SPIN);
+  }
+
+  startNitro(seconds = 1.6) {
+    this.nitro = seconds;
+  }
+
+  /** Launch upward, mostly world-up with a bit of the bike's own up. */
+  superJump() {
+    const a = this.chassis.getAngle();
+    let dx = -Math.sin(a) * 0.35, dy = 0.65 + Math.cos(a) * 0.35;
+    const len = Math.hypot(dx, dy);
+    dx /= len;
+    dy /= len;
+    for (const b of this.bodies()) {
+      const v = b.getLinearVelocity();
+      b.setLinearVelocity(new Vec2(v.x + dx * JUMP_SPEED * 0.5, Math.max(v.y, 0) + dy * JUMP_SPEED));
+    }
+  }
+
+  /** Shield rescue: put the bike back upright above where it is, keeping some speed. */
+  rescue() {
+    const p = this.chassis.getPosition();
+    const v = this.chassis.getLinearVelocity();
+    const nv = new Vec2(Math.max(4, v.x * 0.7), Math.max(4, v.y));
+    const x = p.x, y = p.y + 1.4;
+    this.chassis.setTransform(new Vec2(x, y), 0);
+    this.rear.setTransform(new Vec2(x + REAR.x, y + REAR.y), this.rear.getAngle());
+    this.front.setTransform(new Vec2(x + FRONT.x, y + FRONT.y), this.front.getAngle());
+    for (const b of this.bodies()) {
+      b.setLinearVelocity(nv);
+      b.setAngularVelocity(0);
+    }
   }
 
   /** Detach the rider into its own tumbling body. Call outside of world.step. */
   crash() {
     if (this.crashed) return;
     this.crashed = true;
+    this.nitro = 0;
     for (const f of this.riderFixtures) this.chassis.destroyFixture(f);
     this.riderFixtures = [];
     const rider = this.world.createBody({

@@ -3,7 +3,7 @@ import { Input } from './input';
 import { Sfx } from './audio';
 import { LEVELS, starTimes } from './levels';
 import { drawBackground } from './render';
-import { getRecord, isUnlocked, submitRun, totalStars } from './storage';
+import { getRecord, isUnlocked, submitRun, totalStars, addCoins } from './storage';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const canvas = $<HTMLCanvasElement>('game');
@@ -88,16 +88,18 @@ function startLevel(i: number) {
   show(null);
 }
 
-function finish(level: number, info: { time: number; flips: number; ghost: number[][] }) {
+function finish(level: number, info: { time: number; flips: number; coins: number; ghost: number[][] }) {
   const stars = starsFor(level, info.time);
   const prev = getRecord(level)?.best;
-  const isBest = submitRun(level, info.time, stars, info.ghost);
+  const earned = info.coins + 10 + stars * 10 + (prev === undefined ? 25 : 0);
+  addCoins(earned);
+  const isBest = submitRun(level, info.time, stars, info.ghost, game!.spec.id);
   const [three, two] = starTimes(LEVELS[level].build().length);
   $('result-title').textContent = isBest && prev !== undefined ? 'New Record!' : 'Finished!';
   $('result-stars').innerHTML = `<span class="stars">${starHtml(stars)}</span>`;
   $('result-time').textContent = `${fmt(info.time)}s`;
   $('result-detail').textContent =
-    `Flips: ${info.flips}${prev !== undefined ? `   ·   Best: ${fmt(Math.min(prev, info.time))}s` : ''}\n` +
+    `+${earned} coins   ·   Flips: ${info.flips}${prev !== undefined ? `   ·   Best: ${fmt(Math.min(prev, info.time))}s` : ''}\n` +
     `★★★ ${fmt(three)}s   ·   ★★ ${fmt(two)}s`;
   $('btn-next').classList.toggle('hidden', level + 1 >= LEVELS.length);
   show('result');
@@ -112,6 +114,8 @@ function togglePause() {
 input.onAction = (a) => {
   if (!game) return;
   if (a === 'pause') togglePause();
+  else if (a === 'nitro') game.useNitro();
+  else if (a === 'jump') game.useJump();
   else if (a === 'restart' && !game.finished) {
     game.paused = false;
     game.restartFromStart();
@@ -160,7 +164,7 @@ function frame(now: number) {
     sfx.engine(false, false, 0);
     menuX += dt * 6;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    drawBackground(ctx, W, H, 'desert', menuX, 0, Math.min(H / 15, W / 22));
+    drawBackground(ctx, W, H, 'desert', menuX, 0, Math.min(H / 15, W / 22), now / 1000);
   }
   requestAnimationFrame(frame);
 }
